@@ -72,7 +72,7 @@ fn main() -> anyhow::Result<()> {
             println!("\nresponse:\n------\n{}\n------\n", response);
         }
         Err(e) => {
-            eprintln!("call_handler error: {}", e);
+            eprintln!("call_tcp_chat error: {}", e);
         }
     }
 
