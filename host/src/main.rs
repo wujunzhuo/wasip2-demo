@@ -28,21 +28,6 @@ impl WasiView for MyState {
 }
 
 fn main() -> anyhow::Result<()> {
-    let args: Vec<String> = env::args().collect();
-    let url = Url::parse(match args.len() {
-        1 => "http://httpbin.org/uuid",
-        _ => args[1].as_str(),
-    })?;
-    if url.scheme() != "http" {
-        bail!("only http is supported");
-    }
-    let host = url.host_str().ok_or(anyhow!("no host"))?;
-    let port = url.port().unwrap_or(80);
-    let addr = format!("{host}:{port}");
-    let path = url.path();
-    let request = format!("GET {path} HTTP/1.0\r\nHost: {host}\r\nAccept: */*\r\n\r\n");
-    println!("addr: {}\nrequest:\n------\n{}\n------\n", addr, request);
-
     let engine = Engine::default();
     let component = Component::from_file(&engine, "target/wasm32-wasip2/debug/demo_guest.wasm")?;
 
@@ -66,7 +51,23 @@ fn main() -> anyhow::Result<()> {
 
     let binding = Demo::instantiate(&mut store, &component, &linker)?;
     let guest = binding.component_demo_worker();
-    match guest.call_tcp_chat(store, &addr, &request.into_bytes())? {
+
+    let args: Vec<String> = env::args().collect();
+    let url = Url::parse(match args.len() {
+        1 => "http://httpbin.org/uuid",
+        _ => args[1].as_str(),
+    })?;
+    if url.scheme() != "http" {
+        bail!("only http is supported");
+    }
+    let host = url.host_str().ok_or(anyhow!("no host"))?;
+    let port = url.port().unwrap_or(80);
+    let addr = format!("{host}:{port}");
+    let path = url.path();
+    let request = format!("GET {path} HTTP/1.0\r\nHost: {host}\r\nAccept: */*\r\n\r\n");
+    println!("addr: {}\nrequest:\n------\n{}\n------\n", addr, request);
+
+    match guest.call_tcp_chat(&mut store, &addr, &request.into_bytes())? {
         Ok(response) => {
             let response = String::from_utf8_lossy(&response);
             println!("\nresponse:\n------\n{}\n------\n", response);

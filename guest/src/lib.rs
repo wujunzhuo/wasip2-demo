@@ -1,5 +1,5 @@
 use std::{
-    io::{Read, Write},
+    io::{Error, Read, Write},
     net::{Shutdown, TcpStream},
 };
 
@@ -13,7 +13,7 @@ struct Worker {}
 
 impl Guest for Worker {
     fn tcp_chat(addr: String, request: Vec<u8>) -> Result<Vec<u8>, String> {
-        || -> anyhow::Result<Vec<u8>> {
+        || -> Result<Vec<u8>, Error> {
             let mut stream = TcpStream::connect(&addr)?;
             stream.write_all(&request)?;
             println!(

@@ -5,8 +5,6 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
-log = "0.4"
-env_logger = "0.11"
-url = "2.5"
+url = "2.5.4"
 wasmtime = "28.0"
 wasmtime-wasi = "28.0"
