@@ -5,6 +5,7 @@ interface worker {
 }
 
 world demo {
-    include wasi:cli/imports@0.2.0;
+    include wasi:cli/imports@0.2.3;
+    include wasi:http/imports@0.2.3;
     export worker;
 }

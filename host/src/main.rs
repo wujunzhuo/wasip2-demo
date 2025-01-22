@@ -6,25 +6,17 @@ use wasmtime::{
     component::{bindgen, Component, Linker},
     Engine, Store,
 };
-use wasmtime_wasi::{add_to_linker_sync, ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
+use wasmtime_wasi::{ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
+use wasmtime_wasi_http::{WasiHttpCtx, WasiHttpView};
 
 bindgen!({
-    inline: r#"
-        package app:demo;
-
-        interface worker {
-            tcp-chat: func(addr: string, request: list<u8>) -> result<list<u8>, string>;
-        }
-
-        world demo {
-            export worker;
-        }
-    "#,
+    path: "../wit",
     world: "demo",
 });
 
 struct MyState {
-    wasi_ctx: WasiCtx,
+    wasi: WasiCtx,
+    http: WasiHttpCtx,
     table: ResourceTable,
 }
 
@@ -33,7 +25,16 @@ impl WasiView for MyState {
         &mut self.table
     }
     fn ctx(&mut self) -> &mut WasiCtx {
-        &mut self.wasi_ctx
+        &mut self.wasi
+    }
+}
+
+impl WasiHttpView for MyState {
+    fn ctx(&mut self) -> &mut WasiHttpCtx {
+        &mut self.http
+    }
+    fn table(&mut self) -> &mut ResourceTable {
+        &mut self.table
     }
 }
 
@@ -41,22 +42,23 @@ fn main() -> anyhow::Result<()> {
     let engine = Engine::default();
     let component = Component::from_file(&engine, "demo_guest.wasm")?;
 
-    let ctx = WasiCtxBuilder::new()
-        .inherit_env()
-        .inherit_stdout()
-        .inherit_stderr()
-        .inherit_network()
-        .allow_ip_name_lookup(true)
-        .allow_tcp(true)
-        .allow_udp(true)
-        .build();
     let state = MyState {
-        wasi_ctx: ctx,
+        wasi: WasiCtxBuilder::new()
+            .inherit_env()
+            .inherit_stdout()
+            .inherit_stderr()
+            .inherit_network()
+            .allow_ip_name_lookup(true)
+            .allow_tcp(true)
+            .allow_udp(true)
+            .build(),
+        http: WasiHttpCtx::new(),
         table: ResourceTable::new(),
     };
 
     let mut linker = Linker::new(&engine);
-    add_to_linker_sync(&mut linker)?;
+    wasmtime_wasi::add_to_linker_sync(&mut linker)?;
+    wasmtime_wasi_http::add_only_http_to_linker_sync(&mut linker)?;
     let mut store = Store::new(&engine, state);
 
     let binding = Demo::instantiate(&mut store, &component, &linker)?;
