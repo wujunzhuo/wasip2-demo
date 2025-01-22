@@ -1,6 +1,5 @@
 use std::env;
 
-use anyhow::bail;
 use wasmtime::{
     component::{bindgen, Component, Linker},
     Engine, Store,
@@ -38,8 +37,16 @@ impl WasiHttpView for MyState {
 }
 
 fn main() -> anyhow::Result<()> {
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 3 {
+        println!("Usage: demo_host wasm_file url (e.g. https://httpbin.org/uuid)");
+        return Ok(());
+    }
+    let wasm_file = args[1].as_str();
+    let url = args[2].as_str();
+
     let engine = Engine::default();
-    let component = Component::from_file(&engine, "demo_guest.wasm")?;
+    let component = Component::from_file(&engine, wasm_file)?;
 
     let state = MyState {
         wasi: WasiCtxBuilder::new()
@@ -63,15 +70,9 @@ fn main() -> anyhow::Result<()> {
     let binding = Demo::instantiate(&mut store, &component, &linker)?;
     let worker = binding.app_demo_worker();
 
-    let args: Vec<String> = env::args().collect();
-    if args.len() != 2 {
-        bail!("Usage: demo_host URL (e.g. https://httpbin.org/uuid)");
-    }
-    let url = args[1].as_str();
-
     match worker.call_http_fetch(&mut store, &url)? {
         Ok(response) => {
-            println!("\nresponse:\n------\n{response}\n------\n");
+            println!("\nresponse:\n------------\n{response}\n------------\n");
         }
         Err(e) => {
             eprintln!("call_http_fetch error: {}", e);

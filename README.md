@@ -18,8 +18,6 @@ wkg wit build -o wit/demo.wasm
 rustup target add wasm32-wasip2
 
 cargo build --package demo_guest --target wasm32-wasip2 --release
-
-ln -sf target/wasm32-wasip2/release/demo_guest.wasm demo_guest.wasm
 ```
 
 https://github.com/seanmonstar/reqwest/pull/2453
@@ -29,7 +27,7 @@ https://github.com/seanmonstar/reqwest/pull/2453
 ```sh
 cargo build --package demo_host --release
 
-./target/release/demo_host https://httpbin.org/uuid
+./target/release/demo_host target/wasm32-wasip2/release/demo_guest.wasm https://httpbin.org/uuid
 ```
 
 ## 4. Build JavaScript guest wasm file
@@ -43,7 +41,7 @@ jco componentize app.js --wit ../wit --world-name demo --out demo_guest.wasm
 
 cd ..
 
-ln -sf guest-js/demo_guest.wasm demo_guest.wasm
+./target/release/demo_host guest-js/demo_guest.wasm https://httpbin.org/uuid
 ```
 
 ## 5. Build Go guest wasm file
@@ -59,7 +57,7 @@ tinygo build -o demo_guest.wasm -target=wasip2 --wit-package ../wit/demo.wasm --
 
 cd ..
 
-ln -sf guest-go/demo_guest.wasm demo_guest.wasm
+./target/release/demo_host guest-go/demo_guest.wasm https://httpbin.org/uuid
 ```
 
 ## 6. Build Python guest wasm file
@@ -76,5 +74,5 @@ componentize-py --wit-path ../wit --world demo componentize app -o demo_guest.wa
 
 cd ..
 
-ln -sf guest-python/demo_guest.wasm demo_guest.wasm
+./target/release/demo_host guest-python/demo_guest.wasm https://httpbin.org/uuid
 ```
