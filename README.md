@@ -41,9 +41,9 @@ cd guest-go
 
 go install go.bytecodealliance.org/cmd/wit-bindgen-go
 
-wit-bindgen-go generate -o internal/ ../wit/demo.wasm
+wit-bindgen-go generate --world demo -o internal/ ../wit
 
-tinygo build -o demo_guest.wasm -target=wasip2 --wit-package ../wit --wit-world demo main.go
+tinygo build -o demo_guest.wasm -target=wasip2 --wit-package ../wit/demo.wasm --wit-world demo app.go
 
 cd ..
 

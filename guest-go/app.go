@@ -1,12 +1,13 @@
 package main
 
 import (
-	"app/internal/app/demo/worker"
 	"fmt"
 	"io"
 	"net"
 
 	"go.bytecodealliance.org/cm"
+
+	"demo/internal/app/demo/worker"
 )
 
 func tcpChat(addr string, request []byte) ([]byte, error) {
