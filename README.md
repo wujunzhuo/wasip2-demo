@@ -32,7 +32,7 @@ cargo build --package demo_host --release
 ./target/release/demo_host https://httpbin.org/uuid
 ```
 
-## 4. Build the guest wasm file from JavaScript
+## 4. Build JavaScript guest wasm file
 
 ```sh
 npm install -g @bytecodealliance/componentize-js @bytecodealliance/jco
