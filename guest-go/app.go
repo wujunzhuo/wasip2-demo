@@ -11,7 +11,7 @@ import (
 )
 
 func httpFetch(url string) (string, error) {
-	fmt.Println("wasm guest-rust http-fetch:", url)
+	fmt.Println("wasm guest-go http-fetch:", url)
 
 	resp, err := http.Get(url)
 	if err != nil {

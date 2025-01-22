@@ -1,5 +1,7 @@
 # wasip2-demo
 
+https://component-model.bytecodealliance.org/language-support.html
+
 ## 1. Build wit
 
 ```sh
@@ -10,7 +12,7 @@ wkg wit fetch
 wkg wit build -o wit/demo.wasm
 ```
 
-## 2. Build the guest wasm file
+## 2. Build Rust guest wasm file
 
 ```sh
 rustup target add wasm32-wasip2
@@ -20,21 +22,31 @@ cargo build --package demo_guest --target wasm32-wasip2 --release
 ln -sf target/wasm32-wasip2/release/demo_guest.wasm demo_guest.wasm
 ```
 
-## 3. Build the host program
+https://github.com/seanmonstar/reqwest/pull/2453
+
+## 3. Run the host program
 
 ```sh
 cargo build --package demo_host --release
-```
-
-## 4. Run
-
-```sh
-./target/release/demo_host
 
 ./target/release/demo_host https://httpbin.org/uuid
 ```
 
-## 5. Build the guest wasm file from Go
+## 4. Build the guest wasm file from JavaScript
+
+```sh
+npm install -g @bytecodealliance/componentize-js @bytecodealliance/jco
+
+cd guest-js
+
+jco componentize app.js --wit ../wit --world-name demo --out demo_guest.wasm
+
+cd ..
+
+ln -sf guest-js/demo_guest.wasm demo_guest.wasm
+```
+
+## 5. Build Go guest wasm file
 
 ```sh
 cd guest-go
@@ -50,7 +62,7 @@ cd ..
 ln -sf guest-go/demo_guest.wasm demo_guest.wasm
 ```
 
-## 6. Build the guest wasm file from Python
+## 6. Build Python guest wasm file
 
 ```sh
 pip install componentize-py

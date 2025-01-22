@@ -1,5 +1,6 @@
 use std::env;
 
+use anyhow::bail;
 use wasmtime::{
     component::{bindgen, Component, Linker},
     Engine, Store,
@@ -63,10 +64,10 @@ fn main() -> anyhow::Result<()> {
     let worker = binding.app_demo_worker();
 
     let args: Vec<String> = env::args().collect();
-    let url = match args.len() {
-        1 => "https://httpbin.org/uuid",
-        _ => args[1].as_str(),
-    };
+    if args.len() != 2 {
+        bail!("Usage: demo_host URL (e.g. https://httpbin.org/uuid)");
+    }
+    let url = args[1].as_str();
 
     match worker.call_http_fetch(&mut store, &url)? {
         Ok(response) => {
