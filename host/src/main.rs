@@ -1,7 +1,5 @@
 use std::env;
 
-use anyhow::{anyhow, bail};
-use url::Url;
 use wasmtime::{
     component::{bindgen, Component, Linker},
     Engine, Store,
@@ -65,27 +63,17 @@ fn main() -> anyhow::Result<()> {
     let worker = binding.app_demo_worker();
 
     let args: Vec<String> = env::args().collect();
-    let url = Url::parse(match args.len() {
-        1 => "http://httpbin.org/uuid",
+    let url = match args.len() {
+        1 => "https://httpbin.org/uuid",
         _ => args[1].as_str(),
-    })?;
-    if url.scheme() != "http" {
-        bail!("only http is supported");
-    }
-    let host = url.host_str().ok_or(anyhow!("no host"))?;
-    let port = url.port().unwrap_or(80);
-    let addr = format!("{host}:{port}");
-    let path = url.path();
-    let request = format!("GET {path} HTTP/1.0\r\nHost: {host}\r\nAccept: */*\r\n\r\n");
-    println!("addr: {}\nrequest:\n------\n{}\n------\n", addr, request);
+    };
 
-    match worker.call_tcp_chat(&mut store, &addr, &request.into_bytes())? {
+    match worker.call_http_fetch(&mut store, &url)? {
         Ok(response) => {
-            let response = String::from_utf8_lossy(&response);
-            println!("\nresponse:\n------\n{}\n------\n", response);
+            println!("\nresponse:\n------\n{response}\n------\n");
         }
         Err(e) => {
-            eprintln!("call_tcp_chat error: {}", e);
+            eprintln!("call_http_fetch error: {}", e);
         }
     }
 

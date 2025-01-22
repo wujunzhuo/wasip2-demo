@@ -1,7 +1,7 @@
 package app:demo;
 
 interface worker {
-    tcp-chat: func(addr: string, request: list<u8>) -> result<list<u8>, string>;
+    http-fetch: func(url: string) -> result<string, string>;
 }
 
 world demo {

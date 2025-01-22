@@ -3,45 +3,40 @@ package main
 import (
 	"fmt"
 	"io"
-	"net"
+	"net/http"
 
 	"go.bytecodealliance.org/cm"
 
 	"demo/internal/app/demo/worker"
 )
 
-func tcpChat(addr string, request []byte) ([]byte, error) {
-	fmt.Println("wasm guest-go[tcp_chat]")
+func httpFetch(url string) (string, error) {
+	fmt.Println("wasm guest-rust http-fetch:", url)
 
-	conn, err := net.Dial("tcp", addr)
+	resp, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	response, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
 	}
 
-	_, err = conn.Write(request)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Printf("wasm guest-go[tcp_chat]: sent %d bytes to %s\n", len(request), addr)
-
-	response, err := io.ReadAll(conn)
-
-	fmt.Printf("wasm guest-go[tcp_chat]: received %d bytes from %s\n", len(response), addr)
-
-	return response, nil
+	return string(response), nil
 }
 
-type RES = cm.Result[cm.List[uint8], cm.List[uint8], string]
+type RES = cm.Result[string, string, string]
 
 func init() {
-	worker.Exports.TCPChat = func(addr string, request cm.List[uint8]) RES {
-		response, err := tcpChat(addr, request.Slice())
+	worker.Exports.HTTPFetch = func(url string) RES {
+		response, err := httpFetch(url)
 		if err != nil {
 			return cm.Err[RES](err.Error())
 		}
 
-		return cm.OK[RES](cm.ToList(response))
+		return cm.OK[RES](response)
 	}
 }
 

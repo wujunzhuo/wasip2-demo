@@ -31,7 +31,7 @@ cargo build --package demo_host --release
 ```sh
 ./target/release/demo_host
 
-./target/release/demo_host http://baidu.com
+./target/release/demo_host https://httpbin.org/uuid
 ```
 
 ## 5. Build the guest wasm file from Go
@@ -59,6 +59,7 @@ cd guest-python
 
 componentize-py --wit-path ../wit --world demo bindings .
 
+# https://github.com/bytecodealliance/componentize-py/issues/96
 componentize-py --wit-path ../wit --world demo componentize app -o demo_guest.wasm
 
 cd ..

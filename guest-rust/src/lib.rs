@@ -1,8 +1,3 @@
-use std::{
-    io::{Error, Read, Write},
-    net::{Shutdown, TcpStream},
-};
-
 use exports::app::demo::worker::Guest;
 
 wit_bindgen::generate!({
@@ -14,27 +9,10 @@ wit_bindgen::generate!({
 struct Worker {}
 
 impl Guest for Worker {
-    fn tcp_chat(addr: String, request: Vec<u8>) -> Result<Vec<u8>, String> {
-        || -> Result<Vec<u8>, Error> {
-            println!("wasm guest-rust[tcp_chat]");
-
-            let mut stream = TcpStream::connect(&addr)?;
-            stream.write_all(&request)?;
-            println!(
-                "wasm guest-rust[tcp_chat]: sent {} bytes to {}",
-                request.len(),
-                addr
-            );
-
-            let mut response = Vec::new();
-            let n = stream.read_to_end(&mut response)?;
-            println!(
-                "wasm guest-rust[tcp_chat]: received {} bytes from {}",
-                n, addr
-            );
-
-            stream.shutdown(Shutdown::Write)?;
-            Ok(response)
+    fn http_fetch(url: String) -> Result<String, String> {
+        || -> anyhow::Result<String> {
+            println!("wasm guest-rust http-fetch: {url}");
+            Ok(ureq::get(&url).call()?.body_mut().read_to_string()?)
         }()
         .map_err(|e| e.to_string())
     }
