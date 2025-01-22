@@ -1,23 +1,49 @@
 # wasip2-demo
 
-## 1. Build wasm file
+## 1. Build wit
+
+```sh
+cargo install wkg
+
+wkg wit build -o wit/demo.wasm
+```
+
+## 2. Build the guest wasm file
 
 ```sh
 rustup target add wasm32-wasip2
 
-cargo build --package demo_guest --target wasm32-wasip2
+cargo build --package demo_guest --target wasm32-wasip2 --release
+
+ln -sf target/wasm32-wasip2/release/demo_guest.wasm demo_guest.wasm
 ```
 
-## 2. Build the host program
+## 3. Build the host program
 
 ```sh
-cargo build --package demo_host
+cargo build --package demo_host --release
 ```
 
-## 3. Run
+## 4. Run
 
 ```sh
-./target/debug/demo_host
+./target/release/demo_host
 
-./target/debug/demo_host http://baidu.com
+./target/release/demo_host http://baidu.com
+```
+
+## 5. Build the guest wasm file from Go
+
+```sh
+cd guest-go
+
+go install go.bytecodealliance.org/cmd/wit-bindgen-go
+
+wit-bindgen-go generate -o internal/ ../wit/demo.wasm
+
+tinygo build -o demo_guest_go.wasm -target=wasip2 --wit-package ../wit/demo.wasm --wit-world demo main.go
+
+cd ..
+
+ln -sf guest-go/demo_guest_go.wasm demo_guest.wasm
 ```

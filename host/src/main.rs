@@ -9,7 +9,17 @@ use wasmtime::{
 use wasmtime_wasi::{add_to_linker_sync, ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
 
 bindgen!({
-    path: "../guest/wit/demo.wit",
+    inline: r#"
+        package app:demo;
+
+        interface worker {
+            tcp-chat: func(addr: string, request: list<u8>) -> result<list<u8>, string>;
+        }
+
+        world demo {
+            export worker;
+        }
+    "#,
     world: "demo",
 });
 
@@ -29,7 +39,7 @@ impl WasiView for MyState {
 
 fn main() -> anyhow::Result<()> {
     let engine = Engine::default();
-    let component = Component::from_file(&engine, "target/wasm32-wasip2/debug/demo_guest.wasm")?;
+    let component = Component::from_file(&engine, "demo_guest.wasm")?;
 
     let ctx = WasiCtxBuilder::new()
         .inherit_env()
@@ -50,7 +60,7 @@ fn main() -> anyhow::Result<()> {
     let mut store = Store::new(&engine, state);
 
     let binding = Demo::instantiate(&mut store, &component, &linker)?;
-    let guest = binding.component_demo_worker();
+    let worker = binding.app_demo_worker();
 
     let args: Vec<String> = env::args().collect();
     let url = Url::parse(match args.len() {
@@ -67,7 +77,7 @@ fn main() -> anyhow::Result<()> {
     let request = format!("GET {path} HTTP/1.0\r\nHost: {host}\r\nAccept: */*\r\n\r\n");
     println!("addr: {}\nrequest:\n------\n{}\n------\n", addr, request);
 
-    match guest.call_tcp_chat(&mut store, &addr, &request.into_bytes())? {
+    match worker.call_tcp_chat(&mut store, &addr, &request.into_bytes())? {
         Ok(response) => {
             let response = String::from_utf8_lossy(&response);
             println!("\nresponse:\n------\n{}\n------\n", response);

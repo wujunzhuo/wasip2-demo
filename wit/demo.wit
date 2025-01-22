@@ -1,9 +1,10 @@
-package component:demo;
+package app:demo;
 
 interface worker {
     tcp-chat: func(addr: string, request: list<u8>) -> result<list<u8>, string>;
 }
 
 world demo {
+    include wasi:cli/imports@0.2.0;
     export worker;
 }
