@@ -10,9 +10,9 @@ struct Worker {}
 
 impl Guest for Worker {
     fn http_fetch(url: String) -> Result<String, String> {
-        || -> anyhow::Result<String> {
+        || -> Result<String, ureq::Error> {
             println!("wasm guest-rust http-fetch: {url}");
-            Ok(ureq::get(&url).call()?.body_mut().read_to_string()?)
+            ureq::get(&url).call()?.body_mut().read_to_string()
         }()
         .map_err(|e| e.to_string())
     }

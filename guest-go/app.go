@@ -27,16 +27,16 @@ func httpFetch(url string) (string, error) {
 	return string(response), nil
 }
 
-type RES = cm.Result[string, string, string]
-
 func init() {
-	worker.Exports.HTTPFetch = func(url string) RES {
+	type Res = cm.Result[string, string, string]
+
+	worker.Exports.HTTPFetch = func(url string) Res {
 		response, err := httpFetch(url)
 		if err != nil {
-			return cm.Err[RES](err.Error())
+			return cm.Err[Res](err.Error())
 		}
 
-		return cm.OK[RES](response)
+		return cm.OK[Res](response)
 	}
 }
 

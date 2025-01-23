@@ -16,6 +16,7 @@ wkg wit build -o wit/demo.wasm
 
 ```sh
 rustup target add wasm32-wasip2
+rustup update
 
 cargo build --package demo_guest --target wasm32-wasip2 --release
 ```
